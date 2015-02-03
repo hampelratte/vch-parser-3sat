@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iPOJO>
+	<instance component="de.berlios.vch.parser.dreisat.DreisatParser" name="vch.parser.3sat" />
+</iPOJO>
