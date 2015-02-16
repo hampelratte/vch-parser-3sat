@@ -1,6 +1,8 @@
 package de.berlios.vch.parser.dreisat;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -114,19 +116,7 @@ public class DreisatParser implements IWebParser {
     @Override
     public IWebPage parse(IWebPage page) throws Exception {
         if (page instanceof VideoPage) {
-            VideoPage vpage = (VideoPage) page;
-            if (vpage.getVideoUri().toString().endsWith(".asx")) {
-                String uri = AsxParser.getUri(vpage.getVideoUri().toString());
-                vpage.setVideoUri(new URI(uri));
-                page.getUserData().remove("video");
-            }
-
-            String content = HttpUtils.get(vpage.getUri().toString(), null, CHARSET);
-            Element img = HtmlParserUtils.getTag(content, "div.seite div.media img.still");
-            if (img != null) {
-                vpage.setThumbnail(new URI(BASE_URL + img.attr("src")));
-            }
-
+            parseVideoPage(page);
             return page;
         } else {
             SyndFeed feed = feedParser.parse(page);
@@ -184,6 +174,25 @@ public class DreisatParser implements IWebParser {
                 feedPage.getPages().add(video);
             }
             return feedPage;
+        }
+    }
+
+    private void parseVideoPage(IWebPage page) throws URISyntaxException, IOException {
+        VideoPage vpage = (VideoPage) page;
+        if (vpage.getVideoUri().toString().endsWith(".asx")) {
+            String uri = AsxParser.getUri(vpage.getVideoUri().toString());
+            vpage.setVideoUri(new URI(uri));
+            page.getUserData().remove("video");
+        }
+
+        if (vpage.getThumbnail() == null) {
+            String content = HttpUtils.get(vpage.getUri().toString(), null, CHARSET);
+            try {
+                Element img = HtmlParserUtils.getTag(content, "a img.TargetDimFullBig");
+                vpage.setThumbnail(new URI(BASE_URL + img.attr("src")));
+            } catch (Exception e) {
+                logger.log(LogService.LOG_DEBUG, "Couldn't parse video thumbnail", e);
+            }
         }
     }
 
