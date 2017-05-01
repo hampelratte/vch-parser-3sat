@@ -188,7 +188,7 @@ public class DreisatParser implements IWebParser {
         if (vpage.getThumbnail() == null) {
             String content = HttpUtils.get(vpage.getUri().toString(), null, CHARSET);
             try {
-                Element img = HtmlParserUtils.getTag(content, "a img.TargetDimFullBig");
+                Element img = HtmlParserUtils.getTag(content, "div#Main img.BoxPictureLarge");
                 vpage.setThumbnail(new URI(BASE_URL + img.attr("src")));
             } catch (Exception e) {
                 logger.log(LogService.LOG_DEBUG, "Couldn't parse video thumbnail", e);
